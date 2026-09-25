@@ -1,2 +1,2 @@
-# Habit-tracker-React
+# Habit-tracker
 A habit tracker made with React.
