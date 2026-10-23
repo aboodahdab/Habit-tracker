@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { editHabit } from "../functions";
+import { checkInput, editHabit } from "../functions";
+
 type input = {
   isItOpened: boolean;
   setIsItOpened: (isItOpened: boolean) => void;
@@ -13,6 +14,7 @@ function HiddenForm({
   habits,
   setAHabit,
   forEditing,
+  setForEditing,
   editId,
 }: input) {
   const [IsPickerShown, setIsPickerShown] = useState(false);
@@ -20,23 +22,54 @@ function HiddenForm({
   const [repeats, setRepeats] = useState([]);
   const [timesOfClick, setTimesOfClick] = useState(1);
   const [clickTimes, setClickTimes] = useState(1);
+  const [notes, setNotes] = useState("");
   //   coming soon:
   //   const [icons,setIcons]=useState(null)
 
-  const [notes, setNotes] = useState("");
+  let timesOfCompletion = null;
+  // editing Times of click
+  let editingTPD = 0;
+  let originalInputValue = "";
+  let originalNote = "";
+  let originalRepeats = [];
+  if (forEditing) {
+    habits.map((habit) => {
+      if (habit.id === editId) {
+        timesOfCompletion = habit["timesOfCompletion"];
+        editingTPD = habit["timesPerDay"];
+        originalInputValue = habit["name"];
+        originalNote = habit["note"];
+        originalRepeats = habit["repeats"];
+
+        console.log(
+          editingTPD,
+          originalNote,
+          originalRepeats,
+          originalInputValue,
+        );
+      }
+    });
+  }
   function editHandler() {
-    if (!checkInput) {
-      console.log("yeahhhh");
+    if (!checkInput(inputValue, notes, clickTimes)) {
       return;
     }
-    editHabit({
-      id:editId,
-      name: inputValue,
-      repeatings: repeats,
-      timesPerDay: clickTimes,
-      note: notes,
-    },editId);
+
+    editHabit(
+      {
+        id: editId,
+        name: inputValue,
+        repeats: repeats,
+        timesPerDay: clickTimes,
+        note: notes,
+        timesOfCompletion: timesOfCompletion,
+      },
+      editId,
+      setAHabit,
+      habits,
+    );
     setIsItOpened(false);
+    setForEditing(false);
   }
   function itsClicked(event) {
     setTimesOfClick(timesOfClick + 1);
@@ -62,41 +95,23 @@ function HiddenForm({
   function closeModal() {
     setIsItOpened(false);
   }
-  function checkInput() {
-    if (inputValue.length > 50) {
-      console.log("Name is too big");
-      return;
-    }
-    if (inputValue === "") {
-      console.log("nothing got entered");
-      return;
-    }
-    if (notes.length > 150) {
-      console.log("notes are too big, max is 150 characters");
-      return;
-    }
-    if (clickTimes > 100) {
-      console.log(
-        "who does something 100 times a day? (other than breathing I guess)",
-      );
-      return;
-    }
-  }
+
   function addAHabit() {
     // check if the input is ok.
-    if (!checkInput) {
+    if (!checkInput(inputValue, notes, clickTimes)) {
       return;
     }
-
 
     const query = [
       ...habits,
       {
         id: crypto.randomUUID(),
+        done: false,
         name: inputValue,
-        repeatings: repeats,
+        repeats: repeats,
         timesPerDay: clickTimes,
         note: notes,
+        timesOfCompletion: 0,
       },
     ];
 
@@ -140,13 +155,15 @@ function HiddenForm({
           </h3>
 
           <input
+            key={`input-text-${forEditing}`}
+            defaultValue={forEditing === true ? originalInputValue : ""}
+            placeholder="e.g. Go to the gym"
             onChange={(e) => {
               const value = e.target.value;
               console.log(value);
               setInputValue(value);
             }}
             type="text"
-            placeholder="Habit name"
             className="w-full bg-neutral-900 border border-neutral-600 rounded-lg px-3 py-2 text-sm text-neutral-100 placeholder-neutral-500 mb-4"
           />
 
@@ -158,6 +175,8 @@ function HiddenForm({
             <input
               type="number"
               min="1"
+              defaultValue={forEditing === true ? editingTPD : "1"}
+              key={`click-times-${forEditing}`}
               onChange={(e) => {
                 const value = +e.target.value;
                 // convert to int with +
@@ -176,7 +195,6 @@ function HiddenForm({
                 const currentState = e.target.checked;
 
                 if (currentState) {
-
                   setIsPickerShown(true);
                   return;
                 }
@@ -254,10 +272,12 @@ function HiddenForm({
           </div>
 
           <textarea
+            key={`textarea-notes-${forEditing}`}
+            placeholder="e.g. Pack gym clothes the night before and go straight after work"
+            defaultValue={forEditing === true ? originalNote : ""}
             onChange={(e) => {
               setNotes(e.target.value);
             }}
-            placeholder="Note (optional)"
             className="w-full bg-neutral-900 border border-neutral-600 rounded-lg px-3 py-2 text-sm text-neutral-100 placeholder-neutral-500 mb-4 resize-none"
           ></textarea>
 
@@ -265,6 +285,7 @@ function HiddenForm({
             className="w-full bg-neutral-100 text-neutral-900 text-sm font-medium py-2 rounded-lg cursor-pointer"
             onClick={() => {
               if (forEditing === false) {
+                console.log("he");
                 addAHabit();
                 return;
               }

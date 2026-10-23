@@ -7,20 +7,23 @@ function getHabitsFromLocalStorage() {
   }
   return parsed_data;
 }
+
 function setInLocalStorage(habits: object) {
   const stringified_query = JSON.stringify(habits);
+  console.log("setting habit in local storage....... ");
   localStorage.setItem("habits", stringified_query);
 }
-function deleteHabit(event) {
+
+function deleteHabit(event, setAHabit, habits) {
   const target = event.target;
   const parent = target.parentElement.parentElement;
   const id = parent.dataset.id;
-  parent.remove();
-  deleteFromLocalStorage(id);
+  console.log(id);
+
+  deleteFromLocalStorage(id, setAHabit, habits);
 }
 
-function deleteFromLocalStorage(id: string) {
-  let habits = getHabitsFromLocalStorage();
+function deleteFromLocalStorage(id: string, setAHabit, habits) {
   for (let i = 0; i < habits.length; i += 1) {
     const current_habit = habits[i];
     if (current_habit["id"] === id) {
@@ -28,25 +31,82 @@ function deleteFromLocalStorage(id: string) {
       habits = habits.filter((item, index) => index !== i);
     }
   }
-  setInLocalStorage(habits);
+  setAHabit(habits);
 }
-function editHabit(editingData, id) {
 
-  const habits = getHabitsFromLocalStorage();
+function editHabit(editingData, id, setAHabit, habits) {
   let array = [];
 
   habits.map((element) => {
-
     if (element.id === id) {
+      console.log(editingData);
       array.push(editingData);
       return;
     }
     array.push(element);
   });
-  setInLocalStorage(array);
+  console.log(array);
+  setAHabit(array);
+}
+function checkInput(inputValue, notes, clickTimes) {
+  if (inputValue.length > 50) {
+    console.log("Name is too big.");
+    return;
+  }
+  if (inputValue === "") {
+    console.log("Nothing got entered.");
+    return;
+  }
+  if (notes.length > 150) {
+    console.log("Note is too big, max is 150 characters.");
+    return;
+  }
+  if (clickTimes > 25) {
+    console.log(
+      "Who does something more than 25 times a day? (other than breathing I guess)",
+    );
+    return;
+  }
+  return true;
+}
+function decrementCompletionTimes(habits, id, setAHabit) {
+  const array = [];
+  habits.map((habit) => {
+    const timesPerDay = habit["timesPerDay"];
+    if (habit.id === id) {
+      habit["timesOfCompletion"] -= 1;
+      if (habit["timesOfCompletion"] < timesPerDay) {
+        habit["done"] = false;
+      }
+    }
+    array.push(habit);
+  });
+  setAHabit(array);
+}
+function incrementCompletionTimes(habits, id, setAHabit) {
+  const array = [];
+  habits.map((habit) => {
+    const timesPerDay = habit["timesPerDay"];
+    if (habit.id === id) {
+      if (habit["timesOfCompletion"] < timesPerDay) {
+        habit["timesOfCompletion"] += 1;
+      }
+      if (habit["timesOfCompletion"] >= timesPerDay) {
+        console.log("that is done");
+        habit["done"] = true;
+        array.push(habit);
+        return;
+      }
+    }
+    array.push(habit);
+  });
+  setAHabit(array);
 }
 
 export {
+  decrementCompletionTimes,
+  incrementCompletionTimes,
+  checkInput,
   getHabitsFromLocalStorage,
   deleteHabit,
   editHabit,
