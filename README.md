@@ -1,2 +1,3 @@
 # Habit-tracker
-A habit tracker made with React.
+A simple Habit Tracker made in React.
+## How to run:coming soon
