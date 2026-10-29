@@ -93,6 +93,9 @@ function HiddenForm({
   }
 
   function closeModal() {
+    if (forEditing) {
+      setForEditing(false);
+    }
     setIsItOpened(false);
   }
 
@@ -125,6 +128,11 @@ function HiddenForm({
       <div
         id="habitModal"
         className={` ${isItOpened === false ? "hidden" : ""} fixed inset-0 bg-black/60 flex items-center justify-center z-50`}
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) {
+            closeModal();
+          }
+        }}
       >
         <div className="bg-neutral-800 rounded-xl p-6 w-80 relative">
           {/* <!-- Close button --> */}
@@ -285,7 +293,6 @@ function HiddenForm({
             className="w-full bg-neutral-100 text-neutral-900 text-sm font-medium py-2 rounded-lg cursor-pointer"
             onClick={() => {
               if (forEditing === false) {
-                console.log("he");
                 addAHabit();
                 return;
               }
@@ -294,7 +301,7 @@ function HiddenForm({
               }
             }}
           >
-            Add habit
+            {forEditing === true ? "Edit Habit" : "Add Habit"}
           </button>
         </div>
       </div>

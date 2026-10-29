@@ -87,14 +87,11 @@ function CreateAHabit({
                 className="flex-1 flex items-center px-3 text-sm border border-green-700 bg-green-950/40 rounded-lg py-1.5 text-green-500 cursor-default transition-colors duration-700 ease-in-out"
               >
                 <span className="flex-1 text-center">✓ Done</span>
-                <span className="text-sm text-neutral-500">
-                  {timesOfCompletion}/{timesPerDay}
-                </span>
               </button>
 
               <button
                 onClick={() => {
-                  decrementCompletionTimes(habits,id,setAHabit)
+                  decrementCompletionTimes(habits, id, setAHabit);
                 }}
                 aria-label="Undo one"
                 className="w-9 flex items-center justify-center border border-neutral-600 rounded-lg text-neutral-300 cursor-pointer"
